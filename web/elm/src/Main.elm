@@ -1,17 +1,17 @@
-module Main exposing (..)
+port module SeatSaver exposing (..)
 
 import Html exposing (..)
-import Html.App as Html
+import Html.App as App
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
 main : Program Never
 main =
-    Html.program
+    App.program
         { init = init
         , update = update
         , view = view
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 -- MODEL
@@ -26,25 +26,13 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-    let seats =
-        [ { seatNo = 1, occupied = False }
-        , { seatNo = 2, occupied = False }
-        , { seatNo = 3, occupied = False }
-        , { seatNo = 4, occupied = False }
-        , { seatNo = 5, occupied = False }
-        , { seatNo = 6, occupied = False }
-        , { seatNo = 7, occupied = False }
-        , { seatNo = 8, occupied = False }
-        , { seatNo = 9, occupied = False }
-        , { seatNo = 10, occupied = False }
-        , { seatNo = 11, occupied = False }
-        , { seatNo = 12, occupied = False }
-        ]
-    in (seats, Cmd.none)
+    ([], Cmd.none)
 
 -- UPDATE
 
-type Msg = Toogle Seat
+type Msg
+    = Toogle Seat
+    | SetSeats Model
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -56,7 +44,8 @@ update msg model =
                 else seatFromModel
             in
                 (List.map updateSeat model, Cmd.none)
-
+        SetSeats seats ->
+            (seats, Cmd.none)
 
 -- VIEW
 
@@ -74,3 +63,13 @@ seatItem seat =
         , onClick (Toogle seat)
         ]
         [ text (toString seat.seatNo) ]
+
+-- PORTS
+
+port seatLists : (Model -> msg) -> Sub msg
+
+-- SUBSCRIPTIONS
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    seatLists SetSeats

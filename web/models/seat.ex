@@ -21,7 +21,7 @@ end
 defimpl Poison.Encoder, for: SeatSaver.Seat do
   def encode(model, opts) do
     %{id: model.id,
-      seatno: model.seat_no,
+      seatNo: model.seat_no,
       occupied: model.occupied
     } |> Poison.Encoder.encode(opts)
   end
