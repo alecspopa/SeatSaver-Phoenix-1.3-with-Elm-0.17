@@ -28,19 +28,24 @@ init =
 -- UPDATE
 
 type Msg
-    = Toogle Seat
+    = RequestSeat Seat
+    | UpdatedSeat Seat
     | SetSeats (List Seat)
 
 update : Msg -> (List Seat) -> ((List Seat), Cmd Msg)
 update msg seats =
     case msg of
-        Toogle seatToToggle ->
-            let updateSeat seatFromSeats =
-                if seatFromSeats.seatNo == seatToToggle.seatNo then
-                    { seatFromSeats | occupied = not seatFromSeats.occupied }
-                else seatFromSeats
+        RequestSeat seat ->
+            (seats, seatsToJs seat)
+        UpdatedSeat seatUpdated ->
+            let
+                seat seatFromSeats =
+                    if seatFromSeats.seatNo == seatUpdated.seatNo then
+                        seatUpdated
+                    else
+                        seatFromSeats
             in
-                (List.map updateSeat seats, Cmd.none)
+                (List.map seat seats, Cmd.none)
         SetSeats seats ->
             (seats, Cmd.none)
 
@@ -57,16 +62,22 @@ seatItem seat =
     in
         li
         [ class ("seat " ++ occupiedClass)
-        , onClick (Toogle seat)
+        , onClick (RequestSeat seat)
         ]
         [ text (toString seat.seatNo) ]
 
 -- PORTS
 
 port seatsFromJs : (List Seat -> msg) -> Sub msg
+port seatUpdatedFromJs : (Seat -> msg) -> Sub msg
+
+port seatsToJs : Seat -> Cmd msg
 
 -- SUBSCRIPTIONS
 
 subscriptions : (List Seat) -> Sub Msg
 subscriptions seats =
-    seatsFromJs SetSeats
+    Sub.batch
+        [ seatsFromJs SetSeats
+        , seatUpdatedFromJs UpdatedSeat
+        ]

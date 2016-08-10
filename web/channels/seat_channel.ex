@@ -23,6 +23,20 @@ defmodule SeatSaver.SeatChannel do
     {:noreply, socket}
   end
 
+  def handle_in("request_seat", payload, socket) do
+    seat = Repo.get!(SeatSaver.Seat, payload["seatNo"]);
+    seat_params = %{occupied: !seat.occupied}
+    changeset = SeatSaver.Seat.changeset(seat, seat_params)
+
+    case Repo.update(changeset) do
+      {:ok, seat} ->
+        broadcast(socket, "updated_seat", seat)
+        {:noreply, socket}
+      {:error, _changeset} ->
+        {:reply, {:error, %{message: "Something went wrong."}}, socket}
+    end
+  end
+
   def handle_info(:after_join, socket) do
     seats = (from s in SeatSaver.Seat, order_by: [asc: s.seat_no]) |> Repo.all
     push(socket, "set_seats", %{seats: seats})

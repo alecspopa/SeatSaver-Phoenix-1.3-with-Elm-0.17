@@ -33,6 +33,12 @@ channel.on("set_seats", data => {
   elmApp.ports.seatsFromJs.send(data.seats);
 })
 
+channel.on("updated_seat", seat => {
+  console.log("received", seat)
+  elmApp.ports.seatUpdatedFromJs.send(seat);
+});
+
 elmApp.ports.seatsToJs.subscribe(seat => {
-  console.log(seat)
+  channel.push("request_seat", seat)
+         .receive("error", payload => console.log(payload.mesage));
 })
