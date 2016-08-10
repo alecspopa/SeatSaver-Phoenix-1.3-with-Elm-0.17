@@ -21,10 +21,7 @@ type alias Seat =
     , occupied: Bool
     }
 
-type alias Model =
-    List Seat
-
-init : (Model, Cmd Msg)
+init : ((List Seat), Cmd Msg)
 init =
     ([], Cmd.none)
 
@@ -32,26 +29,26 @@ init =
 
 type Msg
     = Toogle Seat
-    | SetSeats Model
+    | SetSeats (List Seat)
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
+update : Msg -> (List Seat) -> ((List Seat), Cmd Msg)
+update msg seats =
     case msg of
         Toogle seatToToggle ->
-            let updateSeat seatFromModel =
-                if seatFromModel.seatNo == seatToToggle.seatNo then
-                    { seatFromModel | occupied = not seatFromModel.occupied }
-                else seatFromModel
+            let updateSeat seatFromSeats =
+                if seatFromSeats.seatNo == seatToToggle.seatNo then
+                    { seatFromSeats | occupied = not seatFromSeats.occupied }
+                else seatFromSeats
             in
-                (List.map updateSeat model, Cmd.none)
+                (List.map updateSeat seats, Cmd.none)
         SetSeats seats ->
             (seats, Cmd.none)
 
 -- VIEW
 
-view : Model -> Html Msg
-view model =
-    ul [ class "seats" ] (List.map seatItem model)
+view : (List Seat) -> Html Msg
+view seats =
+    ul [ class "seats" ] (List.map seatItem seats)
 
 seatItem : Seat -> Html Msg
 seatItem seat =
@@ -66,10 +63,10 @@ seatItem seat =
 
 -- PORTS
 
-port seatLists : (Model -> msg) -> Sub msg
+port seatsFromJs : (List Seat -> msg) -> Sub msg
 
 -- SUBSCRIPTIONS
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    seatLists SetSeats
+subscriptions : (List Seat) -> Sub Msg
+subscriptions seats =
+    seatsFromJs SetSeats
