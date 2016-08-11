@@ -34,7 +34,6 @@ channel.on("set_seats", data => {
 })
 
 channel.on("updated_seat", seat => {
-  console.log("received", seat)
   elmApp.ports.seatUpdatedFromJs.send(seat);
 });
 
